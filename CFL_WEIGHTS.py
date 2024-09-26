@@ -35,7 +35,7 @@ num_classes = 10
 defense_flag = 0
 
 '''LEARNING PARAMETERS'''
-n_epochs = 20
+n_epochs = 2
 mb_size = 64
 lr = 0.01
 
