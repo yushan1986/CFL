@@ -137,9 +137,11 @@ class BenUserCFL:
         self.num_classes = num_cls
 
         self.optimizer = SGD(lr=lr, decay=lr / n_epochs, momentum=0.9)
+        #self.optimizer = tf.keras.optimizers.Adam()
         smlp_local = SimpleMLP()
         local_model = smlp_local.build(input_features, self.num_classes)
         local_model.compile(optimizer=SGD(lr=lr, decay=lr / n_epochs, momentum=0.9), loss='categorical_crossentropy', metrics=['accuracy'])
+        #local_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
         self.model = local_model
 
@@ -148,7 +150,7 @@ class BenUserCFL:
         self.y_data = y
 
     def compute_gradients(self):
-        dataset = tf.data.Dataset.from_tensor_slices((self.x_data, self.y_data)).batch(32)
+        dataset = tf.data.Dataset.from_tensor_slices((self.x_data, self.y_data)).batch(self.x_data.shape[0])
 
         # Accumulate gradients across all batches
         my_grads = None
@@ -184,11 +186,11 @@ class BenUserCFL:
         self.gradients = my_grads
 
     def compute_batch_gradients(self, x, y):
-        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+        loss_fn = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
         with tf.GradientTape() as tape:
             predictions = self.model(x, training=True)
             loss = loss_fn(y, predictions)
-        gradients = tape.gradient(loss, self.model.trainable_weights)
+        gradients = tape.gradient(loss, self.model.trainable_variables)
         return gradients
 
     def train(self):
@@ -270,9 +272,12 @@ class ServerCFL:
         self.num_classes = num_cls
 
         self.optimizer = SGD(lr=lr, decay=lr / n_epochs, momentum=0.9)
+        #self.optimizer = tf.keras.optimizers.Adam()
         smlp_global = SimpleMLP()
         global_model = smlp_global.build(input_features, self.num_classes)
         global_model.compile(self.optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+        #global_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
         self.model = global_model
 
     def get_test_data(self, t):
@@ -284,7 +289,7 @@ class ServerCFL:
             avg_grad = tf.reduce_mean(grads, axis=0)
             average_grads.append(avg_grad)
         self.avg_gradients = average_grads
-        self.optimizer.apply_gradients(zip(average_grads, self.model.trainable_weights))
+        self.optimizer.apply_gradients(zip(average_grads, self.model.trainable_variables))
 
     def fedavg_user_models(self, user_model_weight_list):
         weights = [w[0] for w in user_model_weight_list]
@@ -296,7 +301,7 @@ class ServerCFL:
 
     def test_model(self, comm_r, num_cls):
         for (x_tst, y_tst) in self.testdata:
-            cce = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+            cce = tf.keras.losses.CategoricalCrossentropy(from_logits=False)
             logits = self.model.predict(x_tst)
             loss = cce(tf.keras.utils.to_categorical(y_tst, num_cls), logits)
             acc = accuracy_score(tf.argmax(logits, axis=1), y_tst)

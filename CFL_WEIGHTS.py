@@ -35,14 +35,14 @@ num_classes = 10
 defense_flag = 0
 
 '''LEARNING PARAMETERS'''
-n_epochs = 2
+n_epochs = 20
 mb_size = 64
 lr = 0.01
 
 '''POISONING PARAMETERS'''
-poi_user_perc = 0
+poi_user_perc = 0.5
 fraud_type = 'R'  # can be R, C or D
-poison_flag = 'N'  # can be N or D or M
+poison_flag = 'D'  # can be N or D or M
 atk_type = 'FLIP'  # can be FLIP, MODEL_REP, GAUSS
 
 if poison_flag == 'D':
