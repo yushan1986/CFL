@@ -13,6 +13,7 @@ from CFLclasses import ServerCFL
 from CFLclasses import PlotterCFL
 
 starttime = time()
+starttime = time()
 
 seed = random.randint(0, 100)
 seed = 69
