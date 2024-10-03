@@ -34,6 +34,7 @@ input_features = 784
 num_classes = 10
 
 defense_flag = 0
+defense_flag = 0
 
 '''LEARNING PARAMETERS'''
 n_epochs = 20
